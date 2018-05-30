@@ -9,14 +9,7 @@
         Enterprise System @ VSTECS (Thailand) Performance Reoprt System
       </p>
       <p>Login in. To see it in action.</p>
-      <div class="m-t" role="form">
-        <div class="form-group">
-          <input class="form-control" placeholder="Email@vstecs.co.th" v-model="credentials.email">
-        </div>
-        <div class="form-group">
-          <input type="password" class="form-control" placeholder="Password" v-model="credentials.password">
-        </div>
-          <button type="submit" class="btn btn-primary block full-width m-b" @click="login">Login</button>
+          <a :href="loginurl" class="btn btn-primary block full-width m-b" ><i class="fa fa-windows"></i> Sign in With Microsoft</a>
         </div>
         <p class="m-t"> <small>Inspinia we app framework base on Bootstrap 3 &copy; 2014</small> </p>
       </div>
@@ -25,34 +18,17 @@
 
 <script>
 var myStorage = window.localStorage
-// myStorage.setItem('Token', 'Token')
-// myStorage.setItem('isAuthenticated', true)
+//var authHelper = require('@/helpers/auth');
 
 export default {
   name: 'layout',
   data () {
     return {
-      credentials: {
-        "email": "",
-        "password":""
-      }
+      loginurl : ''
     }
   },
   methods: {
-    login: function () {
-      //alert('test')
-      API = window.API
-      this.$http.post( API.LOGIN , this.credentials).then((response) => {
-	       //success
-	       myStorage.setItem('Token', response.body.id)
-	       myStorage.setItem('UID', response.body.userId)
-	       myStorage.setItem('isAuthenticated', true)
-	       location.reload()
-	    }, (response) => {
-	      //error
-	      alert(response.body.error.message)
-	    });
-    }
+    
   }
 }
 </script>
