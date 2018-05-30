@@ -18,13 +18,11 @@
 
 <script>
 var myStorage = window.localStorage
-//var authHelper = require('@/helpers/auth');
-
 export default {
   name: 'layout',
   data () {
     return {
-      loginurl : ''
+      loginurl : myStorage.getItem('loginurl')
     }
   },
   methods: {

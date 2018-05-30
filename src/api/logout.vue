@@ -8,7 +8,7 @@ export default {
   methods : {
   	logout(){
   		window.localStorage.clear();
-		location.reload()
+		location.href='/'
   	}
   },
   created: function () {
