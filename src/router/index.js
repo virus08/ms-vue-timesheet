@@ -64,18 +64,7 @@ router.beforeEach((to, from, next) => {
   if (requiresAuth && !isAuthenticated) {
     next('/login')
   } else {
-    if (isAuthenticated && to.fullPath === '/login') {
-      next(from.fullPath)
-    } else {
-      Vue.http.get(API.USER + UID + '?access_token=' + Token).then((response) => {
-      // success
-      }, (response) => { // error
-        myStorage.clear()
-        // alert(response.body.error.message)
-        next('/login')
-      })
-      next()
-    }
+    next()
   }
 })
 
