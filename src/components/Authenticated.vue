@@ -21,7 +21,7 @@ export default {
       }
       if(token){
         MyStorage.setItem('isAuthenticated',true)
-        MyStorage.setItem('UID',1)
+        //MyStorage.setItem('UID',1)
         MyStorage.setItem('Token',token)
         location.href='/'
         console.log(token)

@@ -177,13 +177,12 @@
 </template>
 
 <script>
-// require('@/assets/js/plugins/pace/pace.min.js'
 import tableData from 'vuetable-2/src/components/Vuetable'
-// import edit_timesheet from './componants/edit_timesheet'
+const MicrosoftGraph = require("@microsoft/microsoft-graph-client")
 
 export default {
   name: 'Timesheet',
-  props: ['RO'],
+  props: ['PageName'],
   components: {
 	tableData,
 	// edit_timesheet
@@ -191,6 +190,8 @@ export default {
 
 	data () {
 		return {
+			profile:{},
+			Name_Surname:'',
 			thisTimesheet:{},
 			edTimesheet:{},
 			adJobType:{},
@@ -243,48 +244,97 @@ export default {
 			}
     	}
 	},
+	created: function () {
+		this.init()
+		this.getJobType()
+		this.getTech()
+		this.getBrand()
+		this.getProject()
+	},
 	methods: {
-	AddNewTask : function (myTimesheet){
-		var API = window.API
-		var API_AddNewTask = API.TIMESHEET 
-		//myTimesheet.modify_date = Date.now()
-		this.newTask.Job_Hours = this.edSOW.filter(list => list.Name == this.newTask.Job_SOW )[0].Hours
-		this.$http.post(API_AddNewTask,this.newTask).then((response) => {
-          	//success
-			// alert('Add:'+ response.body.Job_Header+'On'+response.body.modify_date)
-			this.getTimesheet();
-			this.edTimesheet= {}
-			}, (response) => {
-			//error
-			alert(response.body.error.message)
+		init: function () {
+			API = window.API
+			var myStorage = window.localStorage 
+			const TOKEN = myStorage.getItem('Token');
+			var client =  MicrosoftGraph.Client.init({
+				authProvider: (done) => {
+						done(null, TOKEN); //first parameter takes an error if you can't get an access token
+				}
 			});
-	},
-	clickNewTask: function(){
-		const moment = require('moment')
-		this.getprofile()
-		this.edSOW=''
-		var UID = window.localStorage.getItem('UID')
-		this.newTask = {
-			"UID": UID,
-			"Name_Surname": "",
-			"Job_Type": "",
-			"Job_SOW": "",
-			"Job_Hours": 0,
-			"Base_Technology": [],
-			"contract": [],				
-			"remark": [],
-			"Brands": [],
-			"Projid": "",
-			"Job_Header": "",
-			"Job_detail": "",
-			"create_date": Date.now(),
-			"Job_date": moment().format("YYYY-MM-DD"),
-			"modify_date": Date.now(),
-			"Job_progress": 100,
-			"Job_status": "Completed",
-			"Completed_date": Date.now()
-		}
-	},
+			client
+				.api('/me')
+				.get((err, res) => {
+					if(err){
+						myStorage.clear()
+						location.href='/'
+					}else if (res){
+						this.profile=res
+						var Name_Surname = this.profile.givenName+' '+this.profile.surname
+						window.localStorage.setItem('Name_Surname',Name_Surname)
+						window.localStorage.setItem('UID',this.profile.id)
+						var API_TIMESHEET_BY_Name = API.TIMESHEET + '?filter[where][Name_Surname]='+ Name_Surname 
+						var API_TIMESHEET_GT_THIS_Y= API_TIMESHEET_BY_Name + '&filter[where][create_date][gt]=2018-01&filter[where][Job_date][gt]=2018-01'
+						var API_TIMESHEET = API_TIMESHEET_GT_THIS_Y +'&filter[order]=id%20DESC&filter[limit]=100'
+						this.$http.get(API_TIMESHEET).then((response) => {
+							//success
+								this.tableData = response.body
+							}, (response) => {
+							//error
+							alert(response.body.error.message)
+						});	
+						var API_PROFILE = API.PROFILE+'findOne?filter'
+						this.$http.get(API_PROFILE).then((response) => {
+							//success
+								this.profile = response.body
+							}, (response) => {
+							//error
+							alert(response.body.error.message)
+						});
+					}
+			});
+		},	
+		AddNewTask : function (myTimesheet){
+			var API = window.API
+			var API_AddNewTask = API.TIMESHEET 
+			//myTimesheet.modify_date = Date.now()
+			this.newTask.Job_Hours = this.edSOW.filter(list => list.Name == this.newTask.Job_SOW )[0].Hours
+			this.$http.post(API_AddNewTask,this.newTask).then((response) => {
+				//success
+				// alert('Add:'+ response.body.Job_Header+'On'+response.body.modify_date)
+				this.init();
+				this.edTimesheet= {}
+				}, (response) => {
+				//error
+				alert(response.body.error.message)
+				});
+		},
+		clickNewTask: function(){
+			const moment = require('moment')
+			//this.getprofile()
+			this.edSOW=''
+			var UID = window.localStorage.getItem('UID')
+			var Name_Surname = window.localStorage.getItem('Name_Surname')
+			this.newTask = {
+				"UID": UID,
+				"Name_Surname": Name_Surname,
+				"Job_Type": "",
+				"Job_SOW": "",
+				"Job_Hours": 0,
+				"Base_Technology": ['Software'],
+				"contract": [],				
+				"remark": [],
+				"Brands": ['Oracle'],
+				"Projid": "",
+				"Job_Header": "",
+				"Job_detail": "",
+				"create_date": Date.now(),
+				"Job_date": moment().format("YYYY-MM-DD"),
+				"modify_date": Date.now(),
+				"Job_progress": 100,
+				"Job_status": "Completed",
+				"Completed_date": Date.now()
+			}
+		},
 	changeType : function(){
 		this.getSOW(this.newTask.Job_Type)
 	},
@@ -295,7 +345,7 @@ export default {
 		this.$http.delete(API_Delete_By_Task_Id).then((response) => {
           	//success
 			 //alert('Delete'+ID_Timesheet+' '+response.body.count)
-			 this.getTimesheet();
+			 this.init();
 			}, (response) => {
 			//error
 			alert(response.body.error.message)
@@ -309,7 +359,7 @@ export default {
 		this.$http.put(API_Update_By_Task_Id,myTimesheet).then((response) => {
           	//success
 			 //alert('Update:'+ response.body.Job_Header+'On'+response.body.modify_date)
-			this.getTimesheet();
+			this.init();
 			this.edTimesheet= {}
 			}, (response) => {
 			//error
@@ -351,31 +401,6 @@ export default {
 			alert(response.body.error.message)
 		});
       },
-    getTimesheet: function () {
-			API = window.API
-			var UID = window.localStorage.getItem('UID')
-			var API_TIMESHEET_BY_UID = API.TIMESHEET + '?filter[where][UID]='+ UID 
-			var API_TIMESHEET_GT_THIS_Y= API_TIMESHEET_BY_UID + '&filter[where][create_date][gt]=2018-01&filter[where][Job_date][gt]=2018-01'
-			var API_TIMESHEET = API_TIMESHEET_GT_THIS_Y +'&filter[order]=id%20DESC&filter[limit]=100'
-			this.$http.get(API_TIMESHEET).then((response) => {
-	       //success
-				this.tableData = response.body
-	    }, (response) => {
-	      //error
-	      alert(response.body.error.message)
-	    });
-	},
-	getprofile : function (){
-  		var myStorage = window.localStorage 
-  		var API = window.API
-  		this.$http.get( API.PROFILE+myStorage.getItem('UID')).then((response) => {
-	       //success
-			this.newTask.Name_Surname = response.body.Name+' '+response.body.Sname
-	    }, (response) => {
-	      //error
-	      alert(response.body.error.message)
-	    });
-	  },
 	  getJobType : function (){
   		//var myStorage = window.localStorage 
   		var API = window.API
@@ -409,13 +434,6 @@ export default {
 	      alert(response.body.error.message)
 	    });
 	  },
-  },
-  created: function () {
-	this.getTimesheet()
-	this.getJobType()
-	this.getTech()
-	this.getBrand()
-	this.getProject()	
   }
 }
 </script>
