@@ -2,17 +2,16 @@
 	<li class="nav-header">
   		<div class="dropdown profile-element">
   			<span>
-        		<img alt="image" class="img-circle" :src="img" />
+        		
+						<img id="profileImg" alt="image" class="img-circle" />
             </span>
             <a data-toggle="dropdown" class="dropdown-toggle" href="#">
             	<span class="clear">
             		<span class="block m-t-xs">
-            			<strong class="font-bold">{{ profile.Name }} {{ profile.Sname }} </strong>
-                	</span> 
-                	<span class="text-muted text-xs block">{{profile.position}}<b class="caret"></b>
-                	</span> 
-                </span>
+            			<strong class="font-bold">{{profile.displayName}} </strong><b class="caret"></b></span> 
+              </span>
             </a>
+						<span class="badge">{{profile.jobTitle}}</span>
 			<ul class="dropdown-menu animated fadeInRight m-t-xs">
 				<li> <router-link :to="'/Profile/'+profile.uid">Profile</router-link></li>
 				<li class="divider"></li>
@@ -26,6 +25,8 @@
 </template>
 
 <script>
+const MicrosoftGraph = require("@microsoft/microsoft-graph-client");
+const fs = require('fs'); // requires filesystem module
 export default {
   name: 'profile',
   data () {
@@ -36,15 +37,40 @@ export default {
   },
   methods: {
   	getprofile : function (){
-  		var myStorage = window.localStorage 
-  		
+			var myStorage = window.localStorage 
+			const TOKEN = myStorage.getItem('Token');
+			var client =  MicrosoftGraph.Client.init({
+				authProvider: (done) => {
+						done(null, TOKEN); //first parameter takes an error if you can't get an access token
+				}
+			});
+  		client
+				.api('/me')
+				.get((err, res) => {
+					if(err){
+						myStorage.clear()
+						location.href='/'
+					}
+					this.profile=res
+					//console.log(res); // prints info about authenticated user
+				});
+			client
+				.api('/me/photo/$value')
+				.responseType('blob')
+				.get((err, res, rawResponse) => {
+					if (err) throw err;
+					const url = window.URL;
+					const blobUrl = url.createObjectURL(rawResponse.xhr.response);
+					document.getElementById("profileImg").setAttribute("src", blobUrl);
+				});
+			/*	
   		this.$http.get( API.PROFILE+myStorage.getItem('UID')).then((response) => {
 	       //success
 			this.profile = response.body
 	    }, (response) => {
 	      //error
 	      alert(response.body.error.message)
-	    });
+	    });*/
   	}
   },
   created: function () {

@@ -32,7 +32,7 @@ const credentials = {
     auth: ENV.AUTH
   };
 const oauth2 = require('simple-oauth2').create(credentials);
-window.oauth2 = oauth2
+
 window.Myfunction ={
     getAuthUrl : function () {
         const returnVal = oauth2.authorizationCode.authorizeURL({
