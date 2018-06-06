@@ -9,7 +9,7 @@ import TableComponent from 'vue-table-component';
 
 Vue.use(TableComponent);
 
-import {Authenticated,Timesheet, Dashboard, Certificate,Project, KPI, Profile } from '@/components'
+import {imp,Authenticated,Timesheet, Dashboard, Certificate,Project, KPI, Profile } from '@/components'
 
 require('@/api/main.js')
 
@@ -46,6 +46,7 @@ const routes = [
       ]  
    },
   { path: '/login', component: login },
+  { path: '/import', component: imp },
   { path: '/Logout', component: Logout },
   { path: '*', component: NotFound }
 ]

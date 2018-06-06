@@ -272,12 +272,14 @@ export default {
 						var Name_Surname = this.profile.givenName+' '+this.profile.surname
 						window.localStorage.setItem('Name_Surname',Name_Surname)
 						window.localStorage.setItem('UID',this.profile.id)
-						var API_TIMESHEET_BY_Name = API.TIMESHEET + '?filter[where][Name_Surname]='+ Name_Surname 
-						var API_TIMESHEET_GT_THIS_Y= API_TIMESHEET_BY_Name + '&filter[where][create_date][gt]=2018-01&filter[where][Job_date][gt]=2018-01'
+						var API_TIMESHEET_BY_ID = API.TIMESHEET + '?filter[where][UID]='+ this.profile.id
+						var API_TIMESHEET_GT_THIS_Y= API_TIMESHEET_BY_ID + '&filter[where][create_date][gt]=2018-01&filter[where][Job_date][gt]=2018-01'
 						var API_TIMESHEET = API_TIMESHEET_GT_THIS_Y +'&filter[order]=id%20DESC&filter[limit]=100'
+						console.log(API_TIMESHEET)
 						this.$http.get(API_TIMESHEET).then((response) => {
 							//success
 								this.tableData = response.body
+								console.log(this.tableData)
 							}, (response) => {
 							//error
 							alert(response.body.error.message)

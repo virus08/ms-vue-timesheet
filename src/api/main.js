@@ -1,4 +1,4 @@
-const apiroot =  'http://localhost:8080/api'
+const apiroot =  'http://es-timesheet.appspot.com/api'
 // http://localhost:8080/api/users/login
 const hostURI = 'http://'+location.host
 window.API = {
@@ -6,7 +6,7 @@ window.API = {
     USER: apiroot +'/users/',
     LOGIN: apiroot + '/users/login',
     PROFILE: apiroot + '/profiles/',
-    TIMESHEET: apiroot + '/Timesheets',
+    TIMESHEET: apiroot + '/timesheets',
     SOW :apiroot + '/sows',
     PROJECT :apiroot + '/projects',
     TASKGROP :apiroot + '/jobtypes',
